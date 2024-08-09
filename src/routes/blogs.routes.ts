@@ -12,4 +12,10 @@ blogRouter.post(
   asyncHandler(blogController.createBlogPost),
 );
 
+blogRouter.put(
+  '/:id',
+  asyncHandler(new AuthMiddleware().verify),
+  asyncHandler(blogController.updateBlogPost),
+);
+
 export default blogRouter;

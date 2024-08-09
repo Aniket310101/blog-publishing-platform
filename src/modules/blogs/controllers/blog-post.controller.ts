@@ -3,6 +3,7 @@ import { createBlogPostRequestPayload } from '../payloads/create-blog-post.reque
 import JoiValidation from '../../common/joi-validation/joi-validation';
 import JwtHelper from '../../common/helpers/jwt.helper';
 import BlogPostService from '../services/blog-post.service';
+import { updateBlogPostRequestPayload } from '../payloads/update-blog-post.request.payload';
 
 export default class BlogPostController {
   async createBlogPost(req: Request, res: Response, next: NextFunction) {
@@ -14,5 +15,17 @@ export default class BlogPostController {
     const token = jwtHelper.extractTokenFromHeader(req.headers.authorization);
     const response = await new BlogPostService().createBlogPost(payload, token);
     res.send(response);
+  }
+
+  async updateBlogPost(req: Request, res: Response, next: NextFunction) {
+    const id = req.params.id as string;
+    const payload: typeof updateBlogPostRequestPayload =
+      new JoiValidation().extractAndValidate<
+        typeof updateBlogPostRequestPayload
+      >(req.body, updateBlogPostRequestPayload);
+    const jwtHelper = new JwtHelper();
+    const token = jwtHelper.extractTokenFromHeader(req.headers.authorization);
+    await new BlogPostService().updateBlogPost(payload, id, token);
+    res.status(204).send();
   }
 }

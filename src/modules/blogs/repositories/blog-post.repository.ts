@@ -29,4 +29,38 @@ export default class BlogPostRepository extends BaseDatastore {
     const newBlogPost = new BlogPostModel(dbData);
     return newBlogPost;
   }
+
+  async updateBlogPost(
+    updatedData: BlogPostModel,
+    id: string,
+  ): Promise<BlogPostModel> {
+    let result;
+    try {
+      result = await this.dbInstance.updateOne(
+        { _id: id },
+        { $set: updatedData },
+      );
+      if (result.matchedCount === 0) {
+        throw new ErrorHandler(
+          ErrorCodeEnums.BAD_REQUEST,
+          'No blog post found with the given ID.',
+        );
+      }
+    } catch (err) {
+      throw new ErrorHandler(ErrorCodeEnums.BAD_REQUEST, err as string);
+    }
+    const updatedBlogPost = result ? new BlogPostModel(result) : undefined;
+    return updatedBlogPost;
+  }
+
+  async getBlogPost(id: string): Promise<BlogPostModel | undefined> {
+    let blogPost;
+    try {
+      blogPost = await this.dbInstance.findOne({ _id: id });
+    } catch (err) {
+      throw new ErrorHandler(ErrorCodeEnums.BAD_REQUEST, err as string);
+    }
+    const blogPostModel = blogPost ? new BlogPostModel(blogPost) : undefined;
+    return blogPostModel;
+  }
 }
