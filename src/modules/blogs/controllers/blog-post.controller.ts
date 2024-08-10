@@ -28,4 +28,21 @@ export default class BlogPostController {
     await new BlogPostService().updateBlogPost(payload, id, token);
     res.status(204).send();
   }
+
+  async deleteBlogPost(req: Request, res: Response, next: NextFunction) {
+    const id = req.params.id as string;
+    const jwtHelper = new JwtHelper();
+    const token = jwtHelper.extractTokenFromHeader(req.headers.authorization);
+    await new BlogPostService().deleteBlogPost(id, token);
+    res.status(204).send();
+  }
+
+  async updateBlogPostStatus(req: Request, res: Response, next: NextFunction) {
+    const id = req.params.id as string;
+    const status = req.params.status as string;
+    const jwtHelper = new JwtHelper();
+    const token = jwtHelper.extractTokenFromHeader(req.headers.authorization);
+    await new BlogPostService().updateBlogPostStatus(status, id, token);
+    res.status(204).send();
+  }
 }

@@ -63,4 +63,12 @@ export default class BlogPostRepository extends BaseDatastore {
     const blogPostModel = blogPost ? new BlogPostModel(blogPost) : undefined;
     return blogPostModel;
   }
+
+  async deleteBlogPost(id: string): Promise<void> {
+    try {
+      await this.dbInstance.deleteOne({ _id: id });
+    } catch (err) {
+      throw new ErrorHandler(ErrorCodeEnums.BAD_REQUEST, err as string);
+    }
+  }
 }

@@ -18,4 +18,16 @@ blogRouter.put(
   asyncHandler(blogController.updateBlogPost),
 );
 
+blogRouter.put(
+  '/:id/status/:status',
+  asyncHandler(new AuthMiddleware().verify),
+  asyncHandler(blogController.updateBlogPostStatus),
+);
+
+blogRouter.delete(
+  '/:id',
+  asyncHandler(new AuthMiddleware().verify),
+  asyncHandler(blogController.deleteBlogPost),
+);
+
 export default blogRouter;

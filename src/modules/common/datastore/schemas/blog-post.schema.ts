@@ -6,6 +6,8 @@ const blogPostSchema = {
   content: { type: String, required: true },
   summary: { type: String, required: true },
   publishedAt: { type: Date },
+  draftedAt: { type: Date },
+  archivedAt: { type: Date },
   status: { type: String, enum: ['DRAFT', 'PUBLISHED', 'ARCHIVED'] },
   author: { type: Object, ref: 'authorSchema', required: true },
   media: { type: Object, ref: 'documentSchema' },

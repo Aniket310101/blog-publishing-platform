@@ -11,6 +11,8 @@ export default class BlogPostModel {
   author: AuthTokenModel;
   media: DocumentModel;
   publishedAt: Date;
+  draftedAt: Date;
+  archivedAt: Date;
   createdAt: Date;
   updatedAt: Date;
 
@@ -23,6 +25,8 @@ export default class BlogPostModel {
     this.author = data.author;
     this.media = data.media;
     this.publishedAt = data.publishedAt;
+    this.draftedAt = data.draftedAt;
+    this.archivedAt = data.archivedAt;
     this.createdAt = data.createdAt;
     this.updatedAt = data.updatedAt;
   }
