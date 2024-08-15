@@ -7,7 +7,9 @@ import { BlogStatusEnums } from '../enums/blog-status.enums';
 import BlogPostModel from '../models/blog-post.model';
 import { createBlogPostRequestPayload } from '../payloads/create-blog-post.request.payload';
 import { updateBlogPostRequestPayload } from '../payloads/update-blog-post.request.payload';
+import { searchBlogPostRequestPayload } from '../payloads/search-blog-post.request.payload';
 import BlogPostRepository from '../repositories/blog-post.repository';
+import SearchBlogPostModel from '../models/search-blog-post.model';
 
 export default class BlogPostService {
   async createBlogPost(
@@ -120,6 +122,82 @@ export default class BlogPostService {
     await blogPostRepository.deleteBlogPost(id);
   }
 
+  async getBlogPost(
+    id: string,
+    token: string,
+  ): Promise<{ blogPost: BlogPostModel; authorAccess: boolean }> {
+    const blogPostRepository = new BlogPostRepository();
+    const blogPost = await blogPostRepository.getBlogPost(id);
+    if (!blogPost) {
+      throw new ErrorHandler(
+        ErrorCodeEnums.BAD_REQUEST,
+        'Blog Post not found!',
+      );
+    }
+    // Check for author access
+    const authorAccess: boolean = this.checkAuthorAccess(
+      token,
+      blogPost?.author?.id,
+    );
+    return { blogPost, authorAccess };
+  }
+
+  async getAuthorBlogPosts(
+    authorId: string,
+    token: string,
+    queryStatus?: string,
+    limit?: number,
+    skip?: number,
+  ): Promise<BlogPostModel[]> {
+    const blogPostRepository = new BlogPostRepository();
+    const status: BlogStatusEnums = this.getBlogStatus(queryStatus);
+    // Check for View Permission
+    if (
+      !status ||
+      status === BlogStatusEnums.DRAFT ||
+      status === BlogStatusEnums.ARCHIVED
+    ) {
+      const tokenInfo: AuthTokenModel = new JwtHelper().decode(token);
+      const userId = tokenInfo.id;
+      const hasViewPermission: boolean = userId === authorId;
+      if (!hasViewPermission) {
+        throw new ErrorHandler(
+          ErrorCodeEnums.BAD_REQUEST,
+          'User does not have permission to perform this operation!',
+        );
+      }
+    }
+    const filters: any = { 'author.id': authorId };
+    let sortOptions;
+    if (status === BlogStatusEnums.PUBLISHED) {
+      filters.status = BlogStatusEnums.PUBLISHED;
+      sortOptions = { publishedAt: 'desc' };
+    } else if (status === BlogStatusEnums.DRAFT) {
+      filters.status = BlogStatusEnums.DRAFT;
+      sortOptions = { draftedAt: 'desc' };
+    } else if (status === BlogStatusEnums.ARCHIVED) {
+      filters.status = BlogStatusEnums.ARCHIVED;
+      sortOptions = { archivedAt: 'desc' };
+    } else {
+      sortOptions = { createdAt: 'desc' };
+    }
+    const blogPosts = blogPostRepository.findBlogPosts(
+      filters,
+      sortOptions,
+      limit,
+      skip,
+    );
+    return blogPosts;
+  }
+
+  async searchBlogPosts(payload: typeof searchBlogPostRequestPayload) {
+    const searchModel = new SearchBlogPostModel(payload);
+    const searchResults = await new BlogPostRepository().searchBlogPosts(
+      searchModel,
+    );
+    return searchResults;
+  }
+
   private setAuditDetails(blogPost: BlogPostModel, token: string) {
     blogPost.author = new JwtHelper().decode(token);
     if (blogPost.status === BlogStatusEnums.PUBLISHED) {
@@ -133,7 +211,7 @@ export default class BlogPostService {
 
   private getBlogStatus(statusString: string): BlogStatusEnums {
     let status: BlogStatusEnums;
-    switch (statusString.toUpperCase()) {
+    switch (statusString?.toUpperCase()) {
       case BlogStatusEnums.PUBLISHED:
         status = BlogStatusEnums.PUBLISHED;
         break;

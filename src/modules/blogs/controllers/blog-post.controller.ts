@@ -4,6 +4,7 @@ import JoiValidation from '../../common/joi-validation/joi-validation';
 import JwtHelper from '../../common/helpers/jwt.helper';
 import BlogPostService from '../services/blog-post.service';
 import { updateBlogPostRequestPayload } from '../payloads/update-blog-post.request.payload';
+import { searchBlogPostRequestPayload } from '../payloads/search-blog-post.request.payload';
 
 export default class BlogPostController {
   async createBlogPost(req: Request, res: Response, next: NextFunction) {
@@ -44,5 +45,41 @@ export default class BlogPostController {
     const token = jwtHelper.extractTokenFromHeader(req.headers.authorization);
     await new BlogPostService().updateBlogPostStatus(status, id, token);
     res.status(204).send();
+  }
+
+  async getBlogPost(req: Request, res: Response, next: NextFunction) {
+    const id = req.params.id as string;
+    const jwtHelper = new JwtHelper();
+    const token = jwtHelper.extractTokenFromHeader(req.headers.authorization);
+    const response = await new BlogPostService().getBlogPost(id, token);
+    res.send(response);
+  }
+
+  async getAuthorBlogPosts(req: Request, res: Response, next: NextFunction) {
+    const id = req.params.id as string;
+    const status = req.params.status as string;
+    const skip = parseInt(req.query.skip as string);
+    const limit = parseInt(req.query.limit as string);
+    const jwtHelper = new JwtHelper();
+    const token = jwtHelper.extractTokenFromHeader(req.headers.authorization);
+    const response = await new BlogPostService().getAuthorBlogPosts(
+      id,
+      token,
+      status,
+      limit,
+      skip,
+    );
+    res.send(response);
+  }
+
+  async searchBlogPosts(req: Request, res: Response, next: NextFunction) {
+    const payload: typeof searchBlogPostRequestPayload =
+      new JoiValidation().extractAndValidate<
+        typeof searchBlogPostRequestPayload
+      >(req.body, searchBlogPostRequestPayload);
+    const jwtHelper = new JwtHelper();
+    const token = jwtHelper.extractTokenFromHeader(req.headers.authorization);
+    const response = await new BlogPostService().searchBlogPosts(payload);
+    res.send(response);
   }
 }

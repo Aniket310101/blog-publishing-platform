@@ -30,4 +30,22 @@ blogRouter.delete(
   asyncHandler(blogController.deleteBlogPost),
 );
 
+blogRouter.get(
+  '/:id',
+  asyncHandler(new AuthMiddleware().verify),
+  asyncHandler(blogController.getBlogPost),
+);
+
+blogRouter.get(
+  '/author/:id/status/:status?',
+  asyncHandler(new AuthMiddleware().verify),
+  asyncHandler(blogController.getAuthorBlogPosts),
+);
+
+blogRouter.post(
+  '/search',
+  asyncHandler(new AuthMiddleware().verify),
+  asyncHandler(blogController.searchBlogPosts),
+);
+
 export default blogRouter;
