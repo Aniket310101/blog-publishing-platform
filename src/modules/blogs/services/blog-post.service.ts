@@ -10,6 +10,7 @@ import { updateBlogPostRequestPayload } from '../payloads/update-blog-post.reque
 import { searchBlogPostRequestPayload } from '../payloads/search-blog-post.request.payload';
 import BlogPostRepository from '../repositories/blog-post.repository';
 import SearchBlogPostModel from '../models/search-blog-post.model';
+import DmsService from '../../dms/services/dms.service';
 
 export default class BlogPostService {
   async createBlogPost(
@@ -119,6 +120,10 @@ export default class BlogPostService {
         'User does not have permission to perform this operation!',
       );
     }
+    // Delete Media File from S3
+    const mediaFileKey: string = currentBlogPost?.media?.fileKey;
+    if (mediaFileKey) await new DmsService().deleteFile(mediaFileKey);
+    // Delete Blog Post
     await blogPostRepository.deleteBlogPost(id);
   }
 
