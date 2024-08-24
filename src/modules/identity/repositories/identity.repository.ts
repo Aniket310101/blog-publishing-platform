@@ -42,6 +42,19 @@ export default class IdentityRepository extends BaseDatastore {
     return userModel;
   }
 
+  async getUserById(id: string): Promise<UserModel | undefined> {
+    let dbUser;
+    try {
+      dbUser = await this.dbInstance.findOne({
+        $and: [{ _id: id }, { isActive: true }],
+      });
+    } catch (err) {
+      throw new ErrorHandler(ErrorCodeEnums.BAD_REQUEST, err as string);
+    }
+    const userModel = dbUser ? new UserModel(dbUser) : undefined;
+    return userModel;
+  }
+
   async updateUserById(
     userID: string,
     updatedDoc: UserModel,

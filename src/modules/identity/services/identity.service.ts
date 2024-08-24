@@ -78,6 +78,19 @@ export default class IdentityService {
     return updatedUser;
   }
 
+  async updateUser(userID: string, data: UserModel): Promise<UserModel> {
+    const updatedUser = await new IdentityRepository().updateUserById(
+      userID,
+      data,
+    );
+    return updatedUser;
+  }
+
+  async getUserById(id: string): Promise<UserModel> {
+    const user = await new IdentityRepository().getUserById(id);
+    return user;
+  }
+
   async deleteUser(userID: string, token: string): Promise<string> {
     const jwtID = new JwtHelper().decode(token).id;
     if (userID !== jwtID)
