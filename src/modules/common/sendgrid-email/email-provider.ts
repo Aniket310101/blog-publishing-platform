@@ -9,16 +9,6 @@ export default class EmailProvider {
     EmailProvider.sendgridClient = sgMail;
     EmailProvider.sendgridClient.setApiKey(process.env.SENDGRID_API_KEY);
     console.log('SendGrid Email Provider Initialized!');
-    // console.time('email');
-    // await this.send(
-    //     ['aniketpurkayastha722@gmail.com'],
-    //     {
-    //         author: 'Aniket',
-    //         blogPostTitle: 'Revolution with AI',
-    //         subjectLine: 'New Blog Alert!'
-    //     }
-    // );
-    // console.timeEnd('email');
   }
 
   async sendEmail(to: string[], emailContent, cc: string[] = []) {

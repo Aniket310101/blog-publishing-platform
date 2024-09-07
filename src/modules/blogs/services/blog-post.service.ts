@@ -11,6 +11,10 @@ import { searchBlogPostRequestPayload } from '../payloads/search-blog-post.reque
 import BlogPostRepository from '../repositories/blog-post.repository';
 import SearchBlogPostModel from '../models/search-blog-post.model';
 import DmsService from '../../dms/services/dms.service';
+import SubscriptionService from '../../subscription-service/services/subscription.service';
+import NotificationService from '../../notification-manager/services/notification.service';
+import UserModel from '../../identity/models/user.model';
+import SubjectLineEnums from '../../notification-manager/subject-line.enums';
 
 export default class BlogPostService {
   async createBlogPost(
@@ -21,7 +25,28 @@ export default class BlogPostService {
     this.setAuditDetails(blogPost, token);
     const newBlogPost: BlogPostModel =
       await new BlogPostRepository().createBlogPost(blogPost);
+    // Send Notification Emails
+    if (newBlogPost.status === BlogStatusEnums.PUBLISHED) {
+      await this.sendNotificationEmailsForBlogPublish(newBlogPost);
+    }
     return newBlogPost;
+  }
+
+  private async sendNotificationEmailsForBlogPublish(
+    blogPost: BlogPostModel,
+  ): Promise<void> {
+    const author: AuthTokenModel = blogPost.author;
+    const subscribers: UserModel[] = (
+      await new SubscriptionService().getSubscriptionInfo(author.id)
+    )?.subscribers;
+    if (subscribers?.length > 0) {
+      await new NotificationService().sendBlogPublishEmailNotifications(
+        subscribers,
+        author.username,
+        blogPost.title,
+        SubjectLineEnums.BLOG_PUBLISH,
+      );
+    }
   }
 
   async updateBlogPost(
