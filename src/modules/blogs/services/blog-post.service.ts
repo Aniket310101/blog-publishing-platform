@@ -15,6 +15,7 @@ import SubscriptionService from '../../subscription-service/services/subscriptio
 import NotificationService from '../../notification-manager/services/notification.service';
 import UserModel from '../../identity/models/user.model';
 import SubjectLineEnums from '../../notification-manager/subject-line.enums';
+import { subscribe } from 'diagnostics_channel';
 
 export default class BlogPostService {
   async createBlogPost(
@@ -36,15 +37,17 @@ export default class BlogPostService {
     blogPost: BlogPostModel,
   ): Promise<void> {
     const author: AuthTokenModel = blogPost.author;
-    const subscribers: UserModel[] = (
+    const subscribers: string[] = (
       await new SubscriptionService().getSubscriptionInfo(author.id)
-    )?.subscribers;
+    )?.subscribers?.map((subscriber) => subscriber.email);
     if (subscribers?.length > 0) {
-      await new NotificationService().sendBlogPublishEmailNotifications(
+      await new NotificationService().sendBlogPublishSubscriberEmailNotifications(
         subscribers,
-        author.username,
-        blogPost.title,
-        SubjectLineEnums.BLOG_PUBLISH,
+        {
+          author: author.username,
+          blogPostTitle: blogPost.title,
+          subjectLine: SubjectLineEnums.BLOG_PUBLISH_SUBSCRIBER,
+        },
       );
     }
   }
