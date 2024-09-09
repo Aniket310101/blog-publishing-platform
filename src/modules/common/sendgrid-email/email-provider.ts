@@ -11,7 +11,12 @@ export default class EmailProvider {
     console.log('SendGrid Email Provider Initialized!');
   }
 
-  async sendEmail(to: string[], emailContent, cc: string[] = []) {
+  async sendEmail(
+    to: string[],
+    emailContent,
+    templateId: string,
+    cc: string[] = [],
+  ) {
     const emailParams = {
       to,
       cc,
@@ -19,7 +24,7 @@ export default class EmailProvider {
         name: process.env.SENDGRID_SENDER_NAME,
         email: process.env.SENDGRID_SENDER_EMAIL,
       },
-      templateId: process.env.SENDGRID_BLOG_PUBLISH_NOTIFICATION_TEMPLATE_ID,
+      templateId,
       dynamicTemplateData: emailContent,
     };
     try {

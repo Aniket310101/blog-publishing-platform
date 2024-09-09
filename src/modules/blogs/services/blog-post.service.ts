@@ -15,6 +15,10 @@ import SubscriptionService from '../../subscription-service/services/subscriptio
 import NotificationService from '../../notification-manager/services/notification.service';
 import UserModel from '../../identity/models/user.model';
 import SubjectLineEnums from '../../notification-manager/subject-line.enums';
+import { subscribe } from 'diagnostics_channel';
+import EmailNotificationModel from '../../notification-manager/models/email-notification.model';
+import NotificationEventTypeEnums from '../../notification-manager/enums/notification-event-type.enums';
+import PubSubHandlerClass from '../../common/gcp-pubsub/pubsub-handler';
 
 export default class BlogPostService {
   async createBlogPost(
@@ -36,16 +40,28 @@ export default class BlogPostService {
     blogPost: BlogPostModel,
   ): Promise<void> {
     const author: AuthTokenModel = blogPost.author;
-    const subscribers: UserModel[] = (
+    const subscribers: string[] = (
       await new SubscriptionService().getSubscriptionInfo(author.id)
-    )?.subscribers;
+    )?.subscribers?.map((subscriber) => subscriber.email);
     if (subscribers?.length > 0) {
-      await new NotificationService().sendBlogPublishEmailNotifications(
-        subscribers,
-        author.username,
-        blogPost.title,
-        SubjectLineEnums.BLOG_PUBLISH,
-      );
+      // await new NotificationService().sendBlogPublishSubscriberEmailNotifications(
+      //   subscribers,
+      //   {
+      //     author: author.username,
+      //     blogPostTitle: blogPost.title,
+      //     subjectLine: SubjectLineEnums.BLOG_PUBLISH_SUBSCRIBER,
+      //   },
+      // );
+      const payload: EmailNotificationModel = {
+        eventType: NotificationEventTypeEnums.BLOG_PUBLISH_SUBSCRIBER_EVENT,
+        recepients: subscribers,
+        emailContent: {
+          author: author.username,
+          blogPostTitle: blogPost.title,
+          subjectLine: SubjectLineEnums.BLOG_PUBLISH_SUBSCRIBER,
+        },
+      };
+      await new PubSubHandlerClass().publishEmailNotification(payload);
     }
   }
 
