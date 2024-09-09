@@ -1,13 +1,13 @@
 import NotificationEventTypeEnums from '../enums/notification-event-type.enums';
 
 export default class EmailNotificationModel {
-  eventType?: NotificationEventTypeEnums;
+  eventType: NotificationEventTypeEnums;
 
-  recepients?: string[];
+  recepients: string[];
 
   ccRecepients?: string[];
 
-  emailContent?;
+  emailContent;
 
   constructor(data) {
     this.eventType = data.eventType;
