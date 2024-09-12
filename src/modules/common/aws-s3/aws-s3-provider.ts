@@ -29,7 +29,7 @@ export default class AwsS3Provider {
       AwsS3Provider.s3 = new S3Client({
         credentials: {
           accessKeyId: process.env.AWS_ACCESS_KEY,
-          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+          secretAccessKey: process.env.AWS_SECRET_S3_KEY,
         },
         region: process.env.S3_BUCKET_REGION,
       });
@@ -47,7 +47,7 @@ export default class AwsS3Provider {
       AwsS3Provider.cloufront = new CloudFrontClient({
         credentials: {
           accessKeyId: process.env.AWS_ACCESS_KEY,
-          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+          secretAccessKey: process.env.AWS_SECRET_S3_KEY,
         },
         region: 'Global',
       });
