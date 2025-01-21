@@ -1,1 +1,1 @@
-# Document-Management-Service
+# Blog Publishing Platform
